@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useReducer } from 'react';
 import styled from 'styled-components';
-
+import Item from './Item';
 import cookieSrc from '../cookie.svg';
+import useInterval from '../hooks/use-interval.hook';
+
 
 const items = [
   { id: 'cursor', name: 'Cursor', cost: 10, value: 1 },
@@ -11,29 +13,96 @@ const items = [
 
 const Game = () => {
   // TODO: Replace this with React state!
-  const numCookies = 100;
-  const purchasedItems = {
-    cursor: 0,
-    grandma: 0,
-    farm: 0,
+
+  const [numCookies, setNumCookies] = React.useState(100);
+  const [purchasedItems, setPurchasedItems] = React.useState({
+    Cursor: 0,
+    Grandma: 0,
+    Farm: 0,
+  })
+
+
+
+
+  const clickAction = (vals) => {
+
+    let currentItem = items.filter(clickerObject => clickerObject.name === vals)
+    console.log(`the current item is ${currentItem[0].name}`)
+    console.log(vals)
+    if (numCookies >= currentItem[0].cost) {
+      setPurchasedItems({
+        ...purchasedItems,
+        [vals]: purchasedItems[vals] + 1,
+
+
+
+      });
+      setNumCookies(numCookies - currentItem[0].cost)
+    }
+    else window.alert("You dont have enough Cookies!!!")
+  }
+
+  const cookieClick = () => {
+    setNumCookies(numCookies + 1);
   };
+
+  console.log('purchasedItems ', purchasedItems)
+
+
+  let passiveCookies = ((purchasedItems.Cursor * 1) + (purchasedItems.Grandma * 10) + (purchasedItems.Farm * 80))
+
+  console.log('passive Cookies' + passiveCookies)
+
+  useInterval(() => {
+    setNumCookies(numCookies + passiveCookies);
+  }, 1000);
+
+  React.useEffect(() => {
+    document.title = `${numCookies} cookies - Cookie Clicker Workshop`;
+  }, [numCookies]);
 
   return (
     <Wrapper>
       <GameArea>
+        <div>{purchasedItems.Cursor} Cursors &nbsp;
+        {purchasedItems.Grandma} Grandmas &nbsp;
+        {purchasedItems.Farm} Farms</div>
         <Indicator>
           <Total>{numCookies} cookies</Total>
           {/* TODO: Calcuate the cookies per second and show it here: */}
-          <strong>0</strong> cookies per second
+          <strong>{passiveCookies}</strong> cookies per second
         </Indicator>
-        <Button>
+        <Button onClick={cookieClick}>
           <Cookie src={cookieSrc} />
         </Button>
       </GameArea>
 
       <ItemArea>
         <SectionTitle>Items:</SectionTitle>
-        {/* TODO: Add <Item> instances here, 1 for each item type. */}
+        {items.map((clicker, index) => {
+
+          return (
+            <Item
+
+              name={clicker.name}
+              index={index}
+              cost={clicker.cost}
+              cookieValue={clicker.value}
+              onClick={clickAction}
+            //currentClicker={clicker.name}
+
+
+
+
+
+            />
+
+          )
+
+        }
+        )
+        }
+
       </ItemArea>
     </Wrapper>
   );
